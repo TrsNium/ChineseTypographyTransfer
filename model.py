@@ -61,7 +61,7 @@ class model():
             dec_conv_9 = tf.layers.batch_normalization(tf.layers.conv2d(tf.nn.relu(dec_conv_8), 64, [3,3], (1,1), 'SAME', name='dec_conv_9'))
 		    dec_deconv_10 = tf.layers.batch_normalization(tf.layers.conv2d_transpose(tf.nn.relu(dec_conv_9), 64, [4,4], (2,2), 'SAME', name='dec_deconv_10'))
 		    dec_conv_11 = tf.layers.batch_normalization(tf.layers.conv2d(tf.nn.relu(tf.concat([dec_deconv_10, enc_conv_1], -1)), 64, [3,3], (1,1), 'SAME', name='dec_conv_11'))
-		    dec_conv_12 = tf.layers.conv2d(tf.nn.relu(dec_conv_11), 1, [3,3], (1,1), 'SAME', name='dec_conv_12')
+		    dec_conv_12 = tf.layers.conv2d(tf.nn.relu(dec_conv_11), 1, [1,1], (1,1), 'SAME', name='dec_conv_12')
 		    return tf.nn.tanh(dec_conv_12)
 
     def train(self):
