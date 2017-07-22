@@ -1,4 +1,6 @@
 import tensorflow as tf
+import numpy as np
+import argparse
 
 class model():
     def __init__(self, args):
@@ -86,3 +88,13 @@ class model():
 
                 print(itr,':    d_loss:',d_loss,'    g_loss:',g_loss)
 
+
+if __name__ == '__main__':
+    argp = argparse.ArgumentParser(description="")
+    argp.add_argument("--lr", dest="lr", type=float, default= 0.0002)
+    argp.add_argument("--xdir", dest="Xdir", default="./data_64/")
+    argp.add_argument("--itrs", dest="itrs", type=int, default=3000000)
+    argp.add_argument("--batch_size", dest="batch_size", type=int, default=8)
+    argp.add_argument("--visualize", dest="visualize", type=bool, default=True)
+    argp.add_argument("--beta1", dest="beta1", type=float, default=0.5)
+    args = argp.parse_args()
