@@ -19,18 +19,18 @@ def sample(size, channel, fontimg_path, file_names):
     encode = lambda x: x/127.5 -1
 
     for file_name in file_names:
-        img = encode(scipy.misc.imread(fontimg_path+file_name+'.jpg', mode='L').astype(np.float32))
+        img = np.expand_dims(encode(scipy.misc.imread(fontimg_path+file_name+'.jpg', mode='L').astype(np.float32)), -1)
         imgs = np.append(imgs, np.array([img]), axis=0)
     imgs = imgs.reshape((-1,size,size,channel))
     return imgs
 
 def visualize(x, fakeY, Y, batch_size, itr):
     decode = lambda x: (x+1.)/2
-    imgs = np.empty((64*3, 64*3, 1), dtype=np.float32)
+    imgs = np.empty((0, 64, 64*3, 1), dtype=np.float32)
     for n in range(batch_size):
-        img = np.hstack(x[n], fakeY[n], Y[n])
+        img = np.hstack((x[n], fakeY[n], Y[n]))
         imgs = np.append(imgs, np.array([img]), axis=0)
-    imgs = imgs.reshape((64*batch_size, 64*3, 1))
+    imgs = imgs.reshape((64*batch_size, 64*3))
     scipy.misc.imsave('./visualized/itr{}.jpg'.format(itr), decode(imgs))
 
 def mk_font_imgs(font_path, save_path, font_size = 42, text_lists = 'moji_lists_.txt'):

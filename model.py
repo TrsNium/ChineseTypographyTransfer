@@ -16,7 +16,7 @@ class model():
         dis_real = self.discriminator(self.label_img, 'Discriminator', True)
 
         V1_loss = -self.label_img * args.lambda_ * (tf.log(tf.nn.sigmoid(self.fake_)) - (1 - self.label_img)*tf.log(1 - tf.nn.sigmoid(self.fake_)))
-        self.gen_loss = tf.reduce_mean(tf.square(dis_fake - tf.ones_like(dis_fake))) + V1_loss
+        self.gen_loss = tf.reduce_mean(tf.square(dis_fake - tf.ones_like(dis_fake))) + tf.reduce_mean(V1_loss)
         self.dis_loss = tf.reduce_mean(tf.square(dis_fake - tf.zeros_like(dis_fake))) + tf.reduce_mean(tf.square(dis_real - tf.ones_like(dis_real)))
         
         trainable_bar = tf.trainable_variables()
@@ -83,7 +83,7 @@ class model():
                 content_imgs = sample(64, 1, self.args.content_dir, sampled_file_name)
                 style_imgs = sample(64, 1, self.args.style_dir, sampled_file_name)
 
-                g_loss, _ = sess.run([self.gen_loss, opt_g], feed_dict={self.input_img:content_imgs})
+                g_loss, _ = sess.run([self.gen_loss, opt_g], feed_dict={self.input_img:content_imgs, self.label_img:style_imgs})
                 d_loss, _ = sess.run([self.dis_loss, opt_d], feed_dict={self.input_img:content_imgs, self.label_img:style_imgs})
 
                 if self.args.visualize and itr%100==0:
