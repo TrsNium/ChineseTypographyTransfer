@@ -1,5 +1,5 @@
 from PIL import Image, ImageFont, ImageDraw
-import scipy
+import scipy.misc
 import numpy as np
 import random 
 import os 
@@ -44,7 +44,7 @@ def mk_font_imgs(font_path, save_path, font_size = 42, text_lists = 'moji_lists_
         char = char.split('\n')[0]
         mk_img_from_font(char, font_path, save_path, 42)
 
-def sample_files_function(batch_size, text_lists = 'moji_lists.txt'):
+def sample_files_function(batch_size, text_lists = 'moji_lists_.txt'):
     with open(text_lists) as fs:
         chars = fs.readlines()
     

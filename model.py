@@ -102,7 +102,7 @@ if __name__ == '__main__':
     argp.add_argument("--lr", dest="lr", type=float, default= 0.003)
     argp.add_argument("--lambda", dest="lambda_", type=float, default= 0.0002)
     argp.add_argument("--itrs", dest="itrs", type=int, default=3000000)
-    argp.add_argument("--batch_size", dest="batch_size", type=int, default=8)
+    argp.add_argument("--batch_size", dest="batch_size", type=int, default=3)
     argp.add_argument("--visualize", dest="visualize", type=bool, default=True)
     argp.add_argument("--beta1", dest="beta1", type=float, default=0.5)
     argp.add_argument("--content_dir", dest="content_dir", type=str, default="./togoshi_mono/")
