@@ -12,12 +12,20 @@ class model():
         self.label_img = tf.placeholder(dtype=tf.float32, shape=[None, 64, 64, 1])
         
         self.fake_ = self.generate(self.input_img, 'Generator')
-        dis_fake = self.discriminator(self.fake_, 'Discriminator', False)
-        dis_real = self.discriminator(self.label_img, 'Discriminator', True)
 
-        V1_loss = -self.label_img * args.lambda_ * (tf.log(tf.nn.sigmoid(self.fake_)) - (1 - self.label_img)*tf.log(1 - tf.nn.sigmoid(self.fake_)))
-        self.gen_loss = tf.reduce_mean(tf.square(dis_fake - tf.ones_like(dis_fake))) + tf.reduce_mean(V1_loss)
-        self.dis_loss = tf.reduce_mean(tf.square(dis_fake - tf.zeros_like(dis_fake))) + tf.reduce_mean(tf.square(dis_real - tf.ones_like(dis_real)))
+        conncated_r_r = tf.concat([self.label_img, self.input_img], axis=-1)
+        conncated_f_r = tf.concat([self.fake_, self.input_img], axis=-1)
+
+        dis_fake = self.discriminator(conncated_f_r, 'Discriminator', False)
+        dis_real = self.discriminator(conncated_r_r, 'Discriminator', True)
+
+        d_f_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=dis_fake, labels=tf.zeros_like(dis_fake)))
+        d_r_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=dis_real, labels=tf.ones_like(dis_real)))
+        self.dis_loss = d_f_loss + d_r_loss
+        self.gen_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=dis_fake, labels=tf.ones_like(dis_fake))) + args.lambda_*tf.reduce_mean(tf.abs(self.label_img-self.fake_))
+
+        #self.gen_loss = tf.reduce_mean(tf.square(dis_fake - tf.ones_like(dis_fake))) + tf.reduce_mean(V1_loss)
+        #self.dis_loss = tf.reduce_mean(tf.square(dis_fake - tf.zeros_like(dis_fake))) + tf.reduce_mean(tf.square(dis_real - tf.ones_like(dis_real)))
         
         trainable_bar = tf.trainable_variables()
         self.dis_var = [var for var in trainable_bar if 'Discriminator' in var.name]
@@ -35,7 +43,8 @@ class model():
             h1 = tf.layers.batch_normalization(tf.layers.conv2d(tf.nn.relu(h0), filters=128, kernel_size=[4,4], strides=(2,2), padding='SAME', name='d_h1_conv'), name="d_bn_h1")
             h2 = tf.layers.batch_normalization(tf.layers.conv2d(tf.nn.relu(h1), filters=256, kernel_size=[4,4], strides=(2,2), padding='SAME', name='d_h2_conv'), name="d_bn_h2")
             h3 = tf.layers.batch_normalization(tf.layers.conv2d(tf.nn.relu(h2), filters=512, kernel_size=[4,4], strides=(1,1), padding='SAME', name='d_h3_conv'), name="d_bn_h3")
-            out = tf.layers.conv2d(tf.nn.relu(h3), filters = 1, kernel_size=[4,4], strides=(1,1), name='d_out_conv')
+            flatt = tf.contrib.layers.flatten(h3)
+            out = tf.layers.dense(flatt, 1, name='dense_out')
             return out
 
     def generate(self, x, name):
@@ -61,7 +70,8 @@ class model():
             dec_deconv_10 = tf.layers.batch_normalization(tf.layers.conv2d_transpose(tf.nn.relu(dec_conv_9), 64, [4,4], (2,2), 'SAME', name='dec_deconv_10'))
             dec_conv_11 = tf.layers.batch_normalization(tf.layers.conv2d(tf.nn.relu(tf.concat([dec_deconv_10, enc_conv_1], -1)), 64, [3,3], (1,1), 'SAME', name='dec_conv_11'))
             dec_conv_12 = tf.layers.conv2d(tf.nn.relu(dec_conv_11), 1, [1,1], (1,1), 'SAME', name='dec_conv_12')
-            return tf.nn.tanh(dec_conv_12)
+            #return tf.nn.tanh(dec_conv_12)
+            return dec_conv_12
 
     def train(self):
         opt_g = tf.train.AdamOptimizer(self.args.lr, beta1=self.args.beta1).minimize(self.gen_loss, var_list=self.gen_var)
@@ -72,7 +82,7 @@ class model():
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         config.log_device_placement = True
-        with tf.Session() as sess:
+        with tf.Session(config=config) as sess:
             tf.global_variables_initializer().run()
             saver = tf.train.Saver(tf.global_variables())
             graph = tf.summary.FileWriter("./logs", sess.graph)
@@ -99,10 +109,10 @@ class model():
 
 if __name__ == '__main__':
     argp = argparse.ArgumentParser(description="")
-    argp.add_argument("--lr", dest="lr", type=float, default= 0.003)
-    argp.add_argument("--lambda", dest="lambda_", type=float, default= 0.0002)
+    argp.add_argument("--lr", dest="lr", type=float, default= 0.0003)
+    argp.add_argument("--lambda", dest="lambda_", type=float, default= 100)
     argp.add_argument("--itrs", dest="itrs", type=int, default=3000000)
-    argp.add_argument("--batch_size", dest="batch_size", type=int, default=3)
+    argp.add_argument("--batch_size", dest="batch_size", type=int, default=10)
     argp.add_argument("--visualize", dest="visualize", type=bool, default=True)
     argp.add_argument("--beta1", dest="beta1", type=float, default=0.5)
     argp.add_argument("--content_dir", dest="content_dir", type=str, default="./togoshi_mono/")
