@@ -34,5 +34,16 @@ def visualize(x, fakeY, Y, batch_size, itr):
     imgs = imgs.reshape((64*batch_size, 64*3, 1))
     scipy.misc.imsave('./visualized/itr{}.jpg'.format(itr), decode(imgs))
 
-mk_img_from_font('あ', 'nicokaku-plus/nicokaku_v1.ttf', './nicokaku_', 42)
-mk_img_from_font('あ', './togoshi-mono-20080629/togoshi-mono.ttf', './togoshi_mono', 42)
+def mk_font_imgs(font_path, save_path, font_size = 42, text_lists = 'moji_lists_.txt'):
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+    
+    with open(text_lists) as fs:
+        chars = fs.readlines()
+    
+    for char in chars:
+        char = char.split('\n')[0]
+        mk_img_from_font(char, font_path, save_path, 42)
+
+mk_font_imgs('nicokaku-plus/nicokaku_v1.ttf', './nicokaku/')
+mk_font_imgs('togoshi-mono-20080629/togoshi-mono.ttf', './togoshi_mono/')
