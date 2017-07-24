@@ -132,10 +132,10 @@ if __name__ == '__main__':
         os.mkdir('./visualized/')
 
     if not os.path.exists(args.content_dir):
-        mk_font_imgs(args.content_font_dir)
+        mk_font_imgs(args.content_font_dir, args.content_dir)
     
     if not os.path.exists(args.style_dir):
-        mk_font_imgs(args.style_font_dir)
+        mk_font_imgs(args.style_font_dir, args.style_dir)
 
     model_ = model(args)
     if args.train:
